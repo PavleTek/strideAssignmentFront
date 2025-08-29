@@ -160,39 +160,39 @@ export const SpaceView: React.FC<SpaceViewProps> = ({ space, onRefresh }) => {
                          <div className="flex-1">
                <h1 className="text-3xl font-bold mb-4">{space.name}</h1>
                
-                               {/* Stats and Action buttons on same level */}
-                <div className="flex items-center justify-between">
+                               {/* Stats and Action buttons - responsive layout */}
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                   <div className="flex items-center gap-6 text-sm">
-                                         <div className="flex items-center gap-2">
-                       <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-                         <span className="text-xs font-medium">{space.contributors?.length ?? 1}</span>
-                       </div>
-                       <span>{space.contributors?.length ?? 1} Contributor</span>
-                     </div>
-                     
-                     <span className="text-white text-xl">•</span>
-                     
-                     <div className="flex items-center gap-2">
-                       <span className="font-medium">{space.flashcards?.length ?? 143} Flashcards</span>
-                     </div>
-                     
-                     <span className="text-white text-xl">•</span>
-                     
-                     <div className="flex items-center gap-2">
-                       <span className="font-medium">{space.subscribers?.length ?? 48} Subscribers</span>
-                     </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                        <span className="text-xs font-medium">{space.contributors?.length ?? 1}</span>
+                      </div>
+                      <span>{space.contributors?.length ?? 1} Contributor</span>
+                    </div>
+                    
+                    <span className="text-white text-xl">•</span>
+                    
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{space.flashcards?.length ?? 143} Flashcards</span>
+                    </div>
+                    
+                    <span className="text-white text-xl">•</span>
+                    
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{space.subscribers?.length ?? 48} Subscribers</span>
+                    </div>
                   </div>
 
-                 {/* Action buttons */}
-                 <div className="flex items-center gap-3">
-                   <button 
-                     type="button" 
-                     className="p-2 bg-white text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                   >
-                     <EllipsisHorizontalIcon className="w-5 h-5" />
-                   </button>
-                   
-                                       <button 
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-3">
+                    <button 
+                      type="button" 
+                      className="p-2 bg-white text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <EllipsisHorizontalIcon className="w-5 h-5" />
+                    </button>
+                    
+                    <button 
                       type="button" 
                       onClick={handleSubscribeToggle}
                       disabled={isLoading}
@@ -204,8 +204,8 @@ export const SpaceView: React.FC<SpaceViewProps> = ({ space, onRefresh }) => {
                     >
                       {isLoading ? '...' : isSubscribed ? 'Unsubscribe' : 'Subscribe'}
                     </button>
-                 </div>
-               </div>
+                  </div>
+                </div>
              </div>
           </div>
         </div>

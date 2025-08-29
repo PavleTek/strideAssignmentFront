@@ -1,17 +1,25 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import ProtectedRoute from '../components/ProtectedRoute';
-import Dashboard from '../components/Dashboard';
 
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirect to all-notes page on app start
+    router.replace('/all-notes');
+  }, [router]);
+
   return (
     <ProtectedRoute>
-      <Dashboard>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Welcome to Stride App</h1>
-          <p className="text-gray-600">This is your dashboard. Use the sidebar to navigate between Item A and Item B.</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
         </div>
-      </Dashboard>
+      </div>
     </ProtectedRoute>
   );
 }

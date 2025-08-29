@@ -1,7 +1,8 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { getSpacesApiUrl } from '../config/api';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = getSpacesApiUrl();
 
 // Create axios instance with base configuration
 const api = axios.create({

@@ -18,6 +18,20 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Environment Variables
+
+This project uses environment variables to configure the API endpoints. Copy the example environment file and configure it:
+
+```bash
+cp .env.example .env.local
+```
+
+### Available Environment Variables
+
+- `NEXT_PUBLIC_API_BASE_URL`: The base URL for the backend API (default: `http://localhost:3001/api`)
+
+**Note**: The `NEXT_PUBLIC_` prefix is required for client-side access in Next.js applications.
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
