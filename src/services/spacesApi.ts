@@ -63,10 +63,30 @@ export const spacesApi = {
     return response.data;
   },
 
-
-
   async getSpaceById(spaceId: string): Promise<SpaceDetailsResponse> {
     const response = await api.get<SpaceDetailsResponse>(`/spaces/${spaceId}`);
+    return response.data;
+  },
+
+  // Content API functions
+  async createReaction(data: {
+    emoji: string;
+    articleId?: string;
+    flashcardId?: string;
+    commentId?: string;
+    alertId?: string;
+  }): Promise<{ reaction: any }> {
+    const response = await api.post<{ reaction: any }>('/content/reactions', data);
+    return response.data;
+  },
+
+  async createComment(data: {
+    text: string;
+    parentId?: string;
+    articleId?: string;
+    flashcardId?: string;
+  }): Promise<{ comment: any }> {
+    const response = await api.post<{ comment: any }>('/content/comments', data);
     return response.data;
   },
 };

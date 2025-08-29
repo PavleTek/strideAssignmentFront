@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import ProtectedRoute from "../../components/ProtectedRoute";
 import Dashboard from "../../components/Dashboard";
 import { SpaceView, SpaceDetails } from "../../components/spaceView";
@@ -25,6 +25,8 @@ export default function SpacesPage() {
           bannerURL: response.space.bannerURL,
           contributors: response.space.contributors || [],
           flashcards: response.space.flashcards || [],
+          articles: response.space.articles || [],
+          alerts: response.space.alerts || [],
           subscribers: response.space.subscribers || []
         };
         setSelectedSpace(spaceDetails);
@@ -38,12 +40,39 @@ export default function SpacesPage() {
           children: space.children,
           contributors: [],
           flashcards: [],
+          articles: [],
+          alerts: [],
           subscribers: []
         };
         setSelectedSpace(spaceDetails);
       }
     }
   };
+
+  // Function to refresh the selected space data
+  const refreshSelectedSpace = useCallback(async () => {
+    if (selectedSpace) {
+      try {
+        const response = await spacesApi.getSpaceById(selectedSpace.id);
+        const updatedSpace: SpaceDetails = {
+          id: response.space.id,
+          name: response.space.name,
+          about: response.space.about,
+          level: response.space.level,
+          children: response.space.children,
+          bannerURL: response.space.bannerURL,
+          contributors: response.space.contributors || [],
+          flashcards: response.space.flashcards || [],
+          articles: response.space.articles || [],
+          alerts: response.space.alerts || [],
+          subscribers: response.space.subscribers || []
+        };
+        setSelectedSpace(updatedSpace);
+      } catch (error) {
+        console.error('Failed to refresh space data:', error);
+      }
+    }
+  }, [selectedSpace]);
 
   return (
     <ProtectedRoute>
@@ -52,7 +81,7 @@ export default function SpacesPage() {
         selectedSpaceTitle={selectedSpace?.name || null}
       >
         <div>
-          <SpaceView space={selectedSpace} />
+          <SpaceView space={selectedSpace} onRefresh={refreshSelectedSpace} />
         </div>
       </Dashboard>
     </ProtectedRoute>

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline';
 import { spacesApi } from '../services/spacesApi';
+import { Flashcard, FlashcardData } from './flashcard';
+import { Article, ArticleData } from './article';
+import { Alert, AlertData } from './alert';
 
 export interface SpaceDetails {
   id: string;
@@ -10,18 +13,73 @@ export interface SpaceDetails {
   children?: SpaceDetails[];
   bannerURL?: string;
   contributors?: Array<{ user: { id: string; username: string } }>;
-  flashcards?: Array<{ id: string; title: string }>;
+  flashcards?: Array<FlashcardData>;
+  articles?: Array<ArticleData>;
+  alerts?: Array<AlertData>;
   subscribers?: Array<{ user: { id: string; username: string } }>;
 }
 
 interface SpaceViewProps {
   space: SpaceDetails | null;
+  onRefresh?: () => Promise<void>;
 }
 
-export const SpaceView: React.FC<SpaceViewProps> = ({ space }) => {
+export const SpaceView: React.FC<SpaceViewProps> = ({ space, onRefresh }) => {
   const [activeTab, setActiveTab] = useState<'feed' | 'people' | 'about'>('feed');
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Function to refresh space data
+  const refreshSpaceData = async () => {
+    setRefreshKey(prev => prev + 1);
+    if (onRefresh) {
+      await onRefresh();
+    }
+  };
+
+  // Create unified feed items from all content types
+  const getFeedItems = () => {
+    const items: Array<{
+      id: string;
+      type: 'flashcard' | 'article' | 'alert';
+      createdAt: string;
+      data: FlashcardData | ArticleData | AlertData;
+    }> = [];
+
+    // Add flashcards
+    space?.flashcards?.forEach(flashcard => {
+      items.push({
+        id: flashcard.id,
+        type: 'flashcard',
+        createdAt: flashcard.createdAt,
+        data: flashcard
+      });
+    });
+
+    // Add articles
+    space?.articles?.forEach(article => {
+      items.push({
+        id: article.id,
+        type: 'article',
+        createdAt: article.createdAt,
+        data: article
+      });
+    });
+
+    // Add alerts
+    space?.alerts?.forEach(alert => {
+      items.push({
+        id: alert.id,
+        type: 'alert',
+        createdAt: alert.createdAt,
+        data: alert
+      });
+    });
+
+    // Sort by creation date (newest first)
+    return items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  };
 
   // Check subscription status when space changes
   useEffect(() => {
@@ -175,12 +233,47 @@ export const SpaceView: React.FC<SpaceViewProps> = ({ space }) => {
       </div>
 
       {/* Tab content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w mx-auto px-6 py-8">
         {activeTab === 'feed' && (
           <div className="space-y-6">
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">Feed content will appear here</p>
-            </div>
+            {(() => {
+              const feedItems = getFeedItems();
+              return feedItems.length > 0 ? (
+                <div className="space-y-4">
+                  {feedItems.map((item, index) => {
+                    const isFirst = index === 0;
+                    const containerClass = isFirst ? '' : 'px-20';
+                    
+                    switch (item.type) {
+                      case 'flashcard':
+                        return (
+                          <div key={item.id} className={containerClass}>
+                            <Flashcard flashcard={item.data as FlashcardData} onUpdate={refreshSpaceData} />
+                          </div>
+                        );
+                      case 'article':
+                        return (
+                          <div key={item.id} className={containerClass}>
+                            <Article article={item.data as ArticleData} onUpdate={refreshSpaceData} />
+                          </div>
+                        );
+                      case 'alert':
+                        return (
+                          <div key={item.id} className={containerClass}>
+                            <Alert alert={item.data as AlertData} onUpdate={refreshSpaceData} />
+                          </div>
+                        );
+                      default:
+                        return null;
+                    }
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-gray-500 text-lg">No content in this space yet</p>
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -193,7 +286,7 @@ export const SpaceView: React.FC<SpaceViewProps> = ({ space }) => {
         )}
 
         {activeTab === 'about' && (
-          <div className="space-y-6">
+          <div className="space-y-6 px-4">
             {space.about ? (
               <div className="prose max-w-none">
                 <p className="text-gray-600 text-lg leading-relaxed">{space.about}</p>
