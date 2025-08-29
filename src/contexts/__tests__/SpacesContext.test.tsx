@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { SpacesProvider } from '../SpacesContext'
 import { AuthProvider } from '../AuthContext'
 
@@ -50,7 +50,7 @@ describe('SpacesContext with AuthContext', () => {
   })
 
   it('does not fetch spaces when auth is loading', async () => {
-    const { getSpaces } = require('../../services/spacesApi')
+    const { getSpaces } = await import('../../services/spacesApi')
     
     render(
       <AuthProvider>
