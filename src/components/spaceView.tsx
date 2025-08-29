@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline';
-import { spacesApi } from '../services/spacesApi';
-import { Flashcard, FlashcardData } from './flashcard';
-import { Article, ArticleData } from './article';
-import { Alert, AlertData } from './alert';
+import { spacesApi, FlashcardData, ArticleData, AlertData } from '../services/spacesApi';
+import { Flashcard } from './flashcard';
+import { Article } from './article';
+import { Alert } from './alert';
 
 export interface SpaceDetails {
   id: string;
@@ -28,15 +28,27 @@ export const SpaceView: React.FC<SpaceViewProps> = ({ space, onRefresh }) => {
   const [activeTab, setActiveTab] = useState<'feed' | 'people' | 'about'>('feed');
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   // Function to refresh space data
   const refreshSpaceData = async () => {
-    setRefreshKey(prev => prev + 1);
     if (onRefresh) {
       await onRefresh();
     }
   };
+
+  // Check subscription status when space changes
+  const checkSubscriptionStatus = useCallback(async () => {
+    if (!space) return;
+    
+    try {
+      // Check if the current user is in the subscribers list
+      const response = await spacesApi.getSubscribedSpaces();
+      const isSubscribed = response.spaces.some(spaceItem => spaceItem.id === space.id);
+      setIsSubscribed(isSubscribed);
+    } catch (error) {
+      console.error('Failed to check subscription status:', error);
+    }
+  }, [space]);
 
   // Create unified feed items from all content types
   const getFeedItems = () => {
@@ -86,20 +98,7 @@ export const SpaceView: React.FC<SpaceViewProps> = ({ space, onRefresh }) => {
     if (space) {
       checkSubscriptionStatus();
     }
-  }, [space]);
-
-  const checkSubscriptionStatus = async () => {
-    if (!space) return;
-    
-    try {
-      // Check if the current user is in the subscribers list
-      const response = await spacesApi.getSubscribedSpaces();
-      const isSubscribed = response.spaces.some(spaceItem => spaceItem.id === space.id);
-      setIsSubscribed(isSubscribed);
-    } catch (error) {
-      console.error('Failed to check subscription status:', error);
-    }
-  };
+  }, [space, checkSubscriptionStatus]);
 
   const handleSubscribeToggle = async () => {
     if (!space || isLoading) return;
@@ -157,56 +156,56 @@ export const SpaceView: React.FC<SpaceViewProps> = ({ space, onRefresh }) => {
       <div className="bg-[#423cb9] text-white px-12 py-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-start justify-between">
-                         <div className="flex-1">
-               <h1 className="text-3xl font-bold mb-4">{space.name}</h1>
-               
-                               {/* Stats and Action buttons - responsive layout */}
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                  <div className="flex items-center gap-6 text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-medium">{space.contributors?.length ?? 1}</span>
-                      </div>
-                      <span>{space.contributors?.length ?? 1} Contributor</span>
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold mb-4">{space.name}</h1>
+              
+              {/* Stats and Action buttons - responsive layout */}
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div className="flex items-center gap-6 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                      <span className="text-xs font-medium">{space.contributors?.length ?? 1}</span>
                     </div>
-                    
-                    <span className="text-white text-xl">•</span>
-                    
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{space.flashcards?.length ?? 143} Flashcards</span>
-                    </div>
-                    
-                    <span className="text-white text-xl">•</span>
-                    
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{space.subscribers?.length ?? 48} Subscribers</span>
-                    </div>
+                    <span>{space.contributors?.length ?? 1} Contributor</span>
                   </div>
-
-                  {/* Action buttons */}
-                  <div className="flex items-center gap-3">
-                    <button 
-                      type="button" 
-                      className="p-2 bg-white text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      <EllipsisHorizontalIcon className="w-5 h-5" />
-                    </button>
-                    
-                    <button 
-                      type="button" 
-                      onClick={handleSubscribeToggle}
-                      disabled={isLoading}
-                      className={`px-4 py-2 font-semibold rounded-lg transition-colors ${
-                        isSubscribed
-                          ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          : 'bg-white text-gray-900 hover:bg-gray-100'
-                      } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      {isLoading ? '...' : isSubscribed ? 'Unsubscribe' : 'Subscribe'}
-                    </button>
+                  
+                  <span className="text-white text-xl">•</span>
+                  
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{space.flashcards?.length ?? 143} Flashcards</span>
+                  </div>
+                  
+                  <span className="text-white text-xl">•</span>
+                  
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{space.subscribers?.length ?? 48} Subscribers</span>
                   </div>
                 </div>
-             </div>
+
+                {/* Action buttons */}
+                <div className="flex items-center gap-3">
+                  <button 
+                    type="button" 
+                    className="p-2 bg-white text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <EllipsisHorizontalIcon className="w-5 h-5" />
+                  </button>
+                  
+                  <button 
+                    type="button" 
+                    onClick={handleSubscribeToggle}
+                    disabled={isLoading}
+                    className={`px-4 py-2 font-semibold rounded-lg transition-colors ${
+                      isSubscribed
+                        ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        : 'bg-white text-gray-900 hover:bg-gray-100'
+                    } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {isLoading ? '...' : isSubscribed ? 'Unsubscribe' : 'Subscribe'}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

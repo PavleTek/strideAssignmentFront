@@ -4,12 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
-import { useSpaces, Space } from '../contexts/SpacesContext';
+import { Space } from '../contexts/SpacesContext';
 import { Dialog, DialogBackdrop, DialogPanel, Menu, MenuButton, MenuItem, MenuItems, TransitionChild } from '@headlessui/react';
-import { Bars3Icon, BellIcon, XMarkIcon, Cog6ToothIcon, ArrowLeftIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, ArrowLeftIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/outline';
 import {
   ChevronDownIcon,
-  MagnifyingGlassIcon,
   ClockIcon,
   UserGroupIcon,
   RectangleStackIcon,

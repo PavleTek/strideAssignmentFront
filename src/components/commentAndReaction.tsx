@@ -67,7 +67,13 @@ export const CommentAndReaction: React.FC<CommentAndReactionProps> = ({
     
     setIsLoading(true);
     try {
-      const reactionData: any = { emoji };
+      const reactionData: {
+        emoji: string;
+        flashcardId?: string;
+        articleId?: string;
+        alertId?: string;
+        commentId?: string;
+      } = { emoji };
       
       switch (contentType) {
         case 'flashcard':
@@ -98,7 +104,13 @@ export const CommentAndReaction: React.FC<CommentAndReactionProps> = ({
     if (commentText.trim() && !isLoading) {
       setIsLoading(true);
       try {
-        const commentData: any = { text: commentText };
+        const commentData: {
+          text: string;
+          flashcardId?: string;
+          articleId?: string;
+          parentId?: string;
+          contentType?: string;
+        } = { text: commentText };
         
         switch (contentType) {
           case 'flashcard':

@@ -75,7 +75,7 @@ export const SpacesNavigation: React.FC<SpacesNavigationProps> = ({ onSpaceSelec
   const [viewMode, setViewMode] = useState<'subscribed' | 'all'>('all');
   const [expandedSpaces, setExpandedSpaces] = useState<Set<string>>(new Set());
   const [currentSpaces, setCurrentSpaces] = useState<Space[]>([]);
-  const [subscribedSpaces, setSubscribedSpaces] = useState<Space[]>([]);
+  const [, setSubscribedSpaces] = useState<Space[]>([]);
   const [subscribedLoading, setSubscribedLoading] = useState(false);
   const [selectedSpaceId, setSelectedSpaceId] = useState<string | null>(null);
 

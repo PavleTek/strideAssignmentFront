@@ -1,68 +1,10 @@
 import React, { useState } from 'react';
-import { spacesApi } from '../services/spacesApi';
-import { useAuth } from '../contexts/AuthContext';
 import { CommentAndReaction } from './commentAndReaction';
 import { Comment } from './comment';
+import { AlertData as ApiAlertData } from '../services/spacesApi';
 
-export interface AlertData {
-  id: string;
-  type: string;
-  message: string;
-  isRead: boolean;
-  createdAt: string;
-  space: {
-    id: string;
-    name: string;
-  };
-  user?: {
-    id: string;
-    username: string;
-  };
-  reactions?: Array<{
-    id: string;
-    emoji: string;
-    user: {
-      id: string;
-      username: string;
-    };
-  }>;
-  comments?: Array<{
-    id: string;
-    text: string;
-    author: {
-      id: string;
-      username: string;
-    };
-    createdAt: string;
-    level: number;
-    replies?: Array<{
-      id: string;
-      text: string;
-      author: {
-        id: string;
-        username: string;
-      };
-      createdAt: string;
-      level: number;
-      reactions?: Array<{
-        id: string;
-        emoji: string;
-        user: {
-          id: string;
-          username: string;
-        };
-      }>;
-    }>;
-    reactions?: Array<{
-      id: string;
-      emoji: string;
-      user: {
-        id: string;
-        username: string;
-      };
-    }>;
-  }>;
-}
+// Use the API's AlertData type
+export type AlertData = ApiAlertData;
 
 interface AlertProps {
   alert: AlertData;
@@ -77,14 +19,14 @@ export const Alert: React.FC<AlertProps> = ({ alert, onUpdate }) => {
       const date = new Date(dateString);
       const now = new Date();
       const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-      
+
       if (diffInSeconds < 60) return 'just now';
       if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
       if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
       if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} days ago`;
       if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)} months ago`;
       return `${Math.floor(diffInSeconds / 31536000)} years ago`;
-    } catch (error) {
+    } catch {
       return 'recently';
     }
   };
@@ -98,15 +40,13 @@ export const Alert: React.FC<AlertProps> = ({ alert, onUpdate }) => {
           <span className="text-gray-400">•</span>
           <span className="text-gray-500 text-sm">{formatTimeAgo(alert.createdAt)}</span>
         </div>
-          
+
         <div className="flex items-start gap-3 mb-3">
           <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-            <span className="text-gray-600 font-medium text-sm">
-              {alert.user?.username.charAt(0).toUpperCase() || 'U'}
-            </span>
+            <span className="text-gray-600 font-medium text-sm">{alert.author?.username.charAt(0).toUpperCase() || 'U'}</span>
           </div>
           <div className="flex-1">
-            <div className="text-gray-900 font-semibold">{alert.user?.username || 'User'}</div>
+            <div className="text-gray-900 font-semibold">{alert.author?.username || 'User'}</div>
             <div className="text-gray-600 text-sm">
               joined <span className="font-semibold">{alert.space?.name}</span>
             </div>
@@ -126,12 +66,7 @@ export const Alert: React.FC<AlertProps> = ({ alert, onUpdate }) => {
         />
 
         {/* Comments */}
-        {alert.comments && alert.comments.length > 0 && (
-          <Comment
-            comments={alert.comments}
-            onUpdate={onUpdate}
-          />
-        )}
+        {alert.comments && alert.comments.length > 0 && <Comment comments={alert.comments} onUpdate={onUpdate} />}
       </div>
     </div>
   );

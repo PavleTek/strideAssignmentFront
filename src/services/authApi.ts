@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { getAuthApiUrl } from '../config/api';
+import { getApiUrl } from '../config/api';
 
-const API_BASE_URL = getAuthApiUrl();
+const API_BASE_URL = getApiUrl('/auth');
 
 // Create axios instance with base configuration
 const api = axios.create({
@@ -25,16 +25,7 @@ interface AuthResponse {
   token: string;
 }
 
-interface LoginRequest {
-  usernameOrEmail: string;
-  password: string;
-}
-
-interface RegisterRequest {
-  username: string;
-  email: string;
-  password: string;
-}
+// Removed unused interfaces
 
 export const authApi = {
   async login(usernameOrEmail: string, password: string): Promise<AuthResponse> {

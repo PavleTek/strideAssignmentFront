@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { spacesApi } from '../services/spacesApi';
-import { useAuth } from '../contexts/AuthContext';
 import { CommentAndReaction } from './commentAndReaction';
 import { Comment } from './comment';
 
@@ -80,7 +78,7 @@ export const Flashcard: React.FC<FlashcardProps> = ({ flashcard, onUpdate }) => 
       if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} days ago`;
       if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)} months ago`;
       return `${Math.floor(diffInSeconds / 31536000)} years ago`;
-    } catch (error) {
+    } catch {
       return 'recently';
     }
   };

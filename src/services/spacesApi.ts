@@ -1,8 +1,8 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { getSpacesApiUrl } from '../config/api';
+import { getApiUrl } from '../config/api';
 
-const API_BASE_URL = getSpacesApiUrl();
+const API_BASE_URL = getApiUrl('');
 
 // Create axios instance with base configuration
 const api = axios.create({
@@ -33,7 +33,92 @@ export interface SpacesResponse {
 }
 
 export interface SpaceDetailsResponse {
-  space: any; // Using any for now to avoid complex interface
+  space: SpaceDetails;
+}
+
+export interface SpaceDetails {
+  id: string;
+  name: string;
+  about?: string;
+  level: number;
+  children?: SpaceDetails[];
+  bannerURL?: string;
+  contributors?: Array<{ user: { id: string; username: string } }>;
+  flashcards?: Array<FlashcardData>;
+  articles?: Array<ArticleData>;
+  alerts?: Array<AlertData>;
+  subscribers?: Array<{ user: { id: string; username: string } }>;
+}
+
+export interface FlashcardData {
+  id: string;
+  title: string;
+  shortDescription: string;
+  longDescription: string;
+  createdAt: string;
+  author: {
+    id: string;
+    username: string;
+  };
+  comments?: Array<CommentData>;
+  reactions?: Array<ReactionData>;
+}
+
+export interface ArticleData {
+  id: string;
+  title: string;
+  text: string;
+  createdAt: string;
+  author: {
+    id: string;
+    username: string;
+  };
+  comments?: Array<CommentData>;
+  reactions?: Array<ReactionData>;
+}
+
+export interface AlertData {
+  id: string;
+  type: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+  space: {
+    id: string;
+    name: string;
+  };
+  user?: {
+    id: string;
+    username: string;
+  };
+  author: {
+    id: string;
+    username: string;
+  };
+  comments?: Array<CommentData>;
+  reactions?: Array<ReactionData>;
+}
+
+export interface CommentData {
+  id: string;
+  text: string;
+  level: number;
+  createdAt: string;
+  author: {
+    id: string;
+    username: string;
+  };
+  replies?: Array<CommentData>;
+  reactions?: Array<ReactionData>;
+}
+
+export interface ReactionData {
+  id: string;
+  emoji: string;
+  user: {
+    id: string;
+    username: string;
+  };
 }
 
 export const spacesApi = {
@@ -76,8 +161,8 @@ export const spacesApi = {
     flashcardId?: string;
     commentId?: string;
     alertId?: string;
-  }): Promise<{ reaction: any }> {
-    const response = await api.post<{ reaction: any }>('/content/reactions', data);
+  }): Promise<{ reaction: ReactionData }> {
+    const response = await api.post<{ reaction: ReactionData }>('/content/reactions', data);
     return response.data;
   },
 
@@ -86,8 +171,8 @@ export const spacesApi = {
     parentId?: string;
     articleId?: string;
     flashcardId?: string;
-  }): Promise<{ comment: any }> {
-    const response = await api.post<{ comment: any }>('/content/comments', data);
+  }): Promise<{ comment: CommentData }> {
+    const response = await api.post<{ comment: CommentData }>('/content/comments', data);
     return response.data;
   },
 };

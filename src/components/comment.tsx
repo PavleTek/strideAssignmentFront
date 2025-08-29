@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Comment as CommentType, Reaction } from './commentAndReaction';
+import { Comment as CommentType } from './commentAndReaction';
 import { CommentAndReaction } from './commentAndReaction';
 
 interface CommentProps {
@@ -23,7 +23,7 @@ export const Comment: React.FC<CommentProps> = ({ comments, onUpdate, level = 1 
       if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} days ago`;
       if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)} months ago`;
       return `${Math.floor(diffInSeconds / 31536000)} years ago`;
-    } catch (error) {
+    } catch {
       return 'recently';
     }
   };

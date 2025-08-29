@@ -29,7 +29,7 @@ export default function LoginForm() {
       if (!success) {
         setError(isLogin ? 'Invalid credentials' : 'Registration failed');
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);
