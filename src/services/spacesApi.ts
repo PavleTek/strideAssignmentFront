@@ -19,7 +19,23 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
+}, (error) => {
+  return Promise.reject(error);
 });
+
+// Handle response errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token is invalid, remove it and redirect to login
+      Cookies.remove('token');
+      // Dispatch a custom event to notify the app about auth failure
+      window.dispatchEvent(new CustomEvent('auth-failed'));
+    }
+    return Promise.reject(error);
+  }
+);
 
 export interface Space {
   id: string;

@@ -62,6 +62,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } else {
       setLoading(false);
     }
+
+    // Listen for auth-failed events from API calls
+    const handleAuthFailed = () => {
+      setUser(null);
+      setToken(null);
+      Cookies.remove('token');
+    };
+
+    window.addEventListener('auth-failed', handleAuthFailed);
+
+    return () => {
+      window.removeEventListener('auth-failed', handleAuthFailed);
+    };
   }, []);
 
   const login = async (usernameOrEmail: string, password: string): Promise<boolean> => {

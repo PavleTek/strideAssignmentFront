@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getSpaces } from '../services/spacesApi';
+import { useAuth } from './AuthContext';
 
 export interface Space {
   id: string;
@@ -35,6 +36,7 @@ export const SpacesProvider: React.FC<SpacesProviderProps> = ({ children }) => {
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { loading: authLoading, user } = useAuth();
 
   const refreshSpaces = async () => {
     try {
@@ -50,11 +52,19 @@ export const SpacesProvider: React.FC<SpacesProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    refreshSpaces();
+    // Only fetch spaces when auth is not loading and user is authenticated
+    if (!authLoading && user) {
+      refreshSpaces();
+    } else if (!authLoading && !user) {
+      // If auth is done but no user, set loading to false
+      setLoading(false);
+    }
     
     // Listen for spaces refresh events
     const handleSpacesRefresh = () => {
-      refreshSpaces();
+      if (user) {
+        refreshSpaces();
+      }
     };
     
     window.addEventListener('spaces-refresh', handleSpacesRefresh);
@@ -62,11 +72,11 @@ export const SpacesProvider: React.FC<SpacesProviderProps> = ({ children }) => {
     return () => {
       window.removeEventListener('spaces-refresh', handleSpacesRefresh);
     };
-  }, []);
+  }, [authLoading, user]);
 
   const value: SpacesContextType = {
     spaces,
-    loading,
+    loading: loading || authLoading, // Show loading if either spaces or auth is loading
     error,
     refreshSpaces,
   };
