@@ -31,6 +31,10 @@ export interface SpacesResponse {
   spaces: Space[];
 }
 
+export interface SpaceDetailsResponse {
+  space: any; // Using any for now to avoid complex interface
+}
+
 export const spacesApi = {
   async getSpaces(): Promise<SpacesResponse> {
     const response = await api.get<SpacesResponse>('/spaces/titles');
@@ -39,6 +43,11 @@ export const spacesApi = {
 
   async getSubscribedSpaces(): Promise<SpacesResponse> {
     const response = await api.get<SpacesResponse>('/spaces/subscribed');
+    return response.data;
+  },
+
+  async getSubscribedSpacesHierarchy(): Promise<SpacesResponse> {
+    const response = await api.get<SpacesResponse>('/spaces/subscribed-hierarchy');
     return response.data;
   },
 
@@ -53,7 +62,17 @@ export const spacesApi = {
     });
     return response.data;
   },
+
+
+
+  async getSpaceById(spaceId: string): Promise<SpaceDetailsResponse> {
+    const response = await api.get<SpaceDetailsResponse>(`/spaces/${spaceId}`);
+    return response.data;
+  },
 };
 
 // Export a convenience function for the context
 export const getSpaces = () => spacesApi.getSpaces();
+
+// Export convenience function for subscribed spaces hierarchy
+export const getSubscribedSpacesHierarchy = () => spacesApi.getSubscribedSpacesHierarchy();

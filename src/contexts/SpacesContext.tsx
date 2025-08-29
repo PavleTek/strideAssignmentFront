@@ -51,6 +51,17 @@ export const SpacesProvider: React.FC<SpacesProviderProps> = ({ children }) => {
 
   useEffect(() => {
     refreshSpaces();
+    
+    // Listen for spaces refresh events
+    const handleSpacesRefresh = () => {
+      refreshSpaces();
+    };
+    
+    window.addEventListener('spaces-refresh', handleSpacesRefresh);
+    
+    return () => {
+      window.removeEventListener('spaces-refresh', handleSpacesRefresh);
+    };
   }, []);
 
   const value: SpacesContextType = {

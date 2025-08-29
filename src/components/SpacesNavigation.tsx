@@ -11,16 +11,23 @@ interface SpaceItemProps {
   isExpanded: boolean;
   onToggle: (spaceId: string) => void;
   onSpaceClick: (space: Space) => void;
+  expandedSpaces: Set<string>;
+  selectedSpaceId: string | null;
 }
 
-const SpaceItem: React.FC<SpaceItemProps> = ({ space, level, isExpanded, onToggle, onSpaceClick }) => {
+const SpaceItem: React.FC<SpaceItemProps> = ({ space, level, isExpanded, onToggle, onSpaceClick, expandedSpaces, selectedSpaceId }) => {
   const hasChildren = space.children && space.children.length > 0;
   const paddingLeft = level * 16; // 16px per level
+  const isSelected = selectedSpaceId === space.id;
 
   return (
     <div>
       <div
-        className="flex items-center gap-2 py-1 px-2 rounded hover:bg-gray-100 cursor-pointer"
+        className={`flex items-center gap-2 py-1 px-2 rounded cursor-pointer ${
+          isSelected 
+            ? 'bg-gray-200 text-gray-800 font-medium' 
+            : 'hover:bg-gray-100 text-gray-700'
+        }`}
         style={{ paddingLeft: `${paddingLeft}px` }}
         onClick={() => onSpaceClick(space)}
       >
@@ -32,27 +39,25 @@ const SpaceItem: React.FC<SpaceItemProps> = ({ space, level, isExpanded, onToggl
             }}
             className="p-1 hover:bg-gray-200 rounded"
           >
-            {isExpanded ? (
-              <ChevronDownIcon className="h-4 w-4 text-gray-500" />
-            ) : (
-              <ChevronRightIcon className="h-4 w-4 text-gray-500" />
-            )}
+            {isExpanded ? <ChevronDownIcon className="h-4 w-4 text-gray-500" /> : <ChevronRightIcon className="h-4 w-4 text-gray-500" />}
           </button>
         )}
         {!hasChildren && <div className="w-6" />} {/* Spacer for alignment */}
-        <span className="text-sm text-gray-700">{space.name}</span>
+        <span className={`text-sm ${isSelected ? 'font-medium' : ''}`}>{space.name}</span>
       </div>
-      
+
       {hasChildren && isExpanded && (
         <div>
           {space.children!.map((child) => (
-            <SpaceItem
-              key={child.id}
-              space={child}
-              level={level + 1}
-              isExpanded={false}
-              onToggle={onToggle}
-              onSpaceClick={onSpaceClick}
+            <SpaceItem 
+              key={child.id} 
+              space={child} 
+              level={level + 1} 
+              isExpanded={expandedSpaces.has(child.id)} 
+              onToggle={onToggle} 
+              onSpaceClick={onSpaceClick} 
+              expandedSpaces={expandedSpaces}
+              selectedSpaceId={selectedSpaceId}
             />
           ))}
         </div>
@@ -62,7 +67,7 @@ const SpaceItem: React.FC<SpaceItemProps> = ({ space, level, isExpanded, onToggl
 };
 
 interface SpacesNavigationProps {
-  onSpaceSelect?: (space: Space) => void;
+  onSpaceSelect?: (space: Space) => Promise<void>;
 }
 
 export const SpacesNavigation: React.FC<SpacesNavigationProps> = ({ onSpaceSelect }) => {
@@ -70,16 +75,32 @@ export const SpacesNavigation: React.FC<SpacesNavigationProps> = ({ onSpaceSelec
   const [viewMode, setViewMode] = useState<'subscribed' | 'all'>('all');
   const [expandedSpaces, setExpandedSpaces] = useState<Set<string>>(new Set());
   const [currentSpaces, setCurrentSpaces] = useState<Space[]>([]);
+  const [subscribedSpaces, setSubscribedSpaces] = useState<Space[]>([]);
+  const [subscribedLoading, setSubscribedLoading] = useState(false);
+  const [selectedSpaceId, setSelectedSpaceId] = useState<string | null>(null);
 
   React.useEffect(() => {
     if (viewMode === 'all') {
       setCurrentSpaces(spaces);
     } else {
-      // For subscribed spaces, we'll need to fetch them separately
-      // For now, we'll show all spaces
-      setCurrentSpaces(spaces);
+      // Fetch subscribed spaces when switching to subscribed view
+      fetchSubscribedSpaces();
     }
   }, [spaces, viewMode]);
+
+  const fetchSubscribedSpaces = async () => {
+    try {
+      setSubscribedLoading(true);
+      const response = await spacesApi.getSubscribedSpacesHierarchy();
+      setSubscribedSpaces(response.spaces);
+      setCurrentSpaces(response.spaces);
+    } catch (err) {
+      console.error('Failed to fetch subscribed spaces:', err);
+      setCurrentSpaces([]);
+    } finally {
+      setSubscribedLoading(false);
+    }
+  };
 
   const handleToggle = (spaceId: string) => {
     const newExpanded = new Set(expandedSpaces);
@@ -91,13 +112,20 @@ export const SpacesNavigation: React.FC<SpacesNavigationProps> = ({ onSpaceSelec
     setExpandedSpaces(newExpanded);
   };
 
-  const handleSpaceClick = (space: Space) => {
-    if (onSpaceSelect) {
-      onSpaceSelect(space);
+  const handleSpaceClick = async (space: Space) => {
+    const hasChildren = space.children && space.children.length > 0;
+    
+    // Only select spaces that don't have children (leaf spaces)
+    if (!hasChildren) {
+      setSelectedSpaceId(space.id);
+      
+      if (onSpaceSelect) {
+        await onSpaceSelect(space);
+      }
     }
   };
 
-  if (loading) {
+  if (loading || (viewMode === 'subscribed' && subscribedLoading)) {
     return (
       <div className="p-4">
         <div className="animate-pulse">
@@ -117,25 +145,21 @@ export const SpacesNavigation: React.FC<SpacesNavigationProps> = ({ onSpaceSelec
   }
 
   return (
-    <div className="p-4">
+    <div className="px-4">
       {/* Toggle between subscribed and all spaces */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex justify-center gap-4 mb-4 bg-gray-50 p-2">
         <button
           onClick={() => setViewMode('subscribed')}
-          className={`px-3 py-1 text-xs rounded-full ${
-            viewMode === 'subscribed'
-              ? 'bg-blue-100 text-blue-700'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          className={`px-3 py-1 text-gray-600 rounded-md font-medium ${
+            viewMode === 'subscribed' ? 'bg-gray-200 text-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
           Subscribed
         </button>
         <button
           onClick={() => setViewMode('all')}
-          className={`px-3 py-1 text-xs rounded-full ${
-            viewMode === 'all'
-              ? 'bg-blue-100 text-blue-700'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          className={`px-3 py-1 text-gray-600 rounded-md font-medium ${
+            viewMode === 'all' ? 'bg-gray-200 text-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
           All Spaces
@@ -152,15 +176,13 @@ export const SpacesNavigation: React.FC<SpacesNavigationProps> = ({ onSpaceSelec
             isExpanded={expandedSpaces.has(space.id)}
             onToggle={handleToggle}
             onSpaceClick={handleSpaceClick}
+            expandedSpaces={expandedSpaces}
+            selectedSpaceId={selectedSpaceId}
           />
         ))}
       </div>
 
-      {currentSpaces.length === 0 && (
-        <p className="text-gray-500 text-sm text-center py-4">
-          No spaces found
-        </p>
-      )}
+      {currentSpaces.length === 0 && <p className="text-gray-500 text-base text-center py-4">No spaces found</p>}
     </div>
   );
 };
